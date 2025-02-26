@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英语单词连连看</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f6f9fc 0%, #edf2f7 100%);
+            min-height: 100vh;
+        }
+        .word-card {
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 120px;
+            text-align: center;
+            padding: 1rem;
+        }
+        .word-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(66, 153, 225, 0.2);
+        }
+        .word-card.selected {
+            animation: cardSelect 1.5s ease infinite;
+            border: 2px solid #4299e1;
+            z-index: 10;
+        }
+        @keyframes cardSelect {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 rgba(66, 153, 225, 0);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 30px rgba(66, 153, 225, 0.6);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 rgba(66, 153, 225, 0);
+            }
+        }
+        .word-card.matched {
+            animation: matchSuccess 1s ease forwards;
+        }
+        .phonetic {
+            color: #718096;
+            font-size: 0.85em;
+            margin-top: 4px;
+        }
+        .type-badge {
+            background: rgba(66, 153, 225, 0.1);
+            color: #4299e1;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+        @keyframes matchSuccess {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 rgba(72, 187, 120, 0);
+            }
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 30px rgba(72, 187, 120, 0.6);
+            }
+            100% {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+        .card-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+            background: linear-gradient(135deg, #63b3ed 0%, #4299e1 100%);
+            color: white;
+            border-radius: 0.75rem;
+        }
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+        }
+        .celebration.show {
+            display: block;
+            pointer-events: auto;
+            animation: celebrationFadeIn 0.5s ease forwards;
+        }
+        @keyframes celebrationFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        .firework {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            animation: firework 1s ease-out forwards;
+        }
+        @keyframes firework {
+            0% {
+                transform: translate(0, 0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty));
+                opacity: 0;
+            }
+        }
+        .score-increment {
+            position: fixed;
+            color: #48bb78;
+            font-weight: bold;
+            pointer-events: none;
+            animation: scoreFloat 1s ease-out forwards;
+        }
+        @keyframes scoreFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+        }
+        .level-transition {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            font-weight: bold;
+            color: #4299e1;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 90;
+        }
+        .level-transition.show {
+            animation: levelTransition 2s ease-in-out forwards;
+        }
+        @keyframes levelTransition {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            20% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            80% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.5);
+            }
+        }
+        .game-stats {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 20;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: #4299e1;
+            transition: width 0.3s ease;
+        }
+        .level-indicator {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 8px;
+            justify-content: center;
+        }
+        .level-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e2e8f0;
+        }
+        .level-dot.active {
+            background: #4299e1;
+            transform: scale(1.2);
+            transition: all 0.3s ease;
+        }
+        .level-dot.completed {
+            background: #48bb78;
+        }
+        .sound-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #4299e1;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: all 0.2s ease;
+        }
+        .sound-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        .review-mode {
+            background: #f7fafc;
+        }
+        .review-card {
+            cursor: default !important;
+        }
+        .review-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 20;
+        }
+        .review-btn {
+            background: #4299e1;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .review-btn:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+        }
+        .review-btn.disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body class="py-12">
+    <div class="game-stats">
+        <div class="level-indicator">
+            <div class="level-dot" id="level1"></div>
+            <div class="level-dot" id="level2"></div>
+            <div class="level-dot" id="level3"></div>
+            <div class="level-dot" id="level4"></div>
+        </div>
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-600">关卡进度:</span>
+            <span class="text-blue-600 font-medium"><span id="matchedPairs">0</span>/<span id="totalPairs">0</span></span>
+        </div>
+        <div class="progress-bar">
+            <div id="progressBar" class="progress-bar-fill" style="width: 0%"></div>
+        </div>
+        <div class="mt-2 text-center">
+            <span class="text-gray-600">总分:</span>
+            <span id="score" class="text-blue-600 font-bold text-xl ml-2">0</span>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-blue-700 mb-6">英语单词连连看</h1>
+            <div class="text-xl text-gray-600 mb-4">
+                第 <span id="currentLevel" class="text-blue-600 font-bold">1</span> 关
+            </div>
+            <div class="flex justify-center gap-4 mt-4">
+                <button id="newGameBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                    重新开始
+                </button>
+                <button id="reviewModeBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                    复习模式
+                </button>
+            </div>
+        </div>
+
+        <div id="gameBoard" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 max-w-6xl mx-auto">
+            <!-- 卡片将通过 JavaScript 动态生成 -->
+        </div>
+    </div>
+
+    <div id="celebration" class="celebration">
+        <div class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center bg-white p-8 rounded-2xl shadow-2xl">
+            <div class="text-5xl font-bold text-blue-600 mb-6" id="celebrationTitle">🎉 完成第1关！</div>
+            <div class="text-2xl text-gray-600 mb-6">当前得分: <span id="finalScore" class="font-bold text-blue-600">0</span></div>
+            <button id="nextLevelBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                进入下一关
+            </button>
+        </div>
+    </div>
+
+    <div class="review-controls" style="display: none;">
+        <button id="prevBtn" class="review-btn disabled">上一组</button>
+        <button id="autoPlayBtn" class="review-btn">自动播放</button>
+        <button id="nextBtn" class="review-btn">下一组</button>
+        <button id="exitReviewBtn" class="review-btn bg-red-600 hover:bg-red-700">退出复习</button>
+    </div>
+
+    <div id="levelTransition" class="level-transition"></div>
+
+    <script>
+        const allWords = [
+            // 第一关：中国文化相关词汇（12对）
+            [
+                { en: 'Chinese knot', ph: '/nɒt/', zh: '中国结', type: 'n.' },
+                { en: 'Chinese opera', ph: '', zh: '中国戏曲', type: 'n.' },
+                { en: 'Chinese paper-cutting', ph: '', zh: '中国剪纸', type: 'n.' },
+                { en: 'chopsticks', ph: '/ˈtʃɒpstɪks/', zh: '筷子', type: 'n.' },
+                { en: 'dragon dance', ph: '', zh: '舞龙', type: 'n.' },
+                { en: 'emperor', ph: '/ˈempərər/', zh: '皇帝', type: 'n.' },
+                { en: 'sari', ph: '/ˈsɑːri/', zh: '莎丽（印度女民族服饰）', type: 'n.' },
+                { en: 'Indian', ph: '/ˈɪndiən/', zh: '印度（人）的', type: 'adj.' },
+                { en: 'Japanese', ph: '/ˌdʒæpəˈniːz/', zh: '日本（人）的', type: 'adj.' },
+                { en: 'Hindi', ph: '/ˈhɪndi/', zh: '印地语', type: 'n.' },
+                { en: 'billion', ph: '/ˈbɪljən/', zh: '十亿', type: 'num.' },
+                { en: 'population', ph: '/ˌpɒpjuˈleɪʃn/', zh: '人口', type: 'n.' }
+            ],
+            // 第二关：位置和方向词汇（10对）
+            [
+                { en: 'middle', ph: '/ˈmɪdl/', zh: '中间，中央', type: 'n.' },
+                { en: 'in the middle of', ph: '', zh: '在...中间', type: 'phrase' },
+                { en: 'eastern', ph: '/ˈiːstən/', zh: '东部的，东方的', type: 'adj.' },
+                { en: 'south-east', ph: '', zh: '东南方', type: 'n.' },
+                { en: 'location', ph: '/ləʊˈkeɪʃn/', zh: '地点，方位', type: 'n.' },
+                { en: 'lie', ph: '/laɪ/', zh: '位于', type: 'vi.' },
+                { en: 'upwards', ph: '/ˈʌpwədz/', zh: '向上', type: 'adv.' },
+                { en: 'underground', ph: '/ˌʌndəˈɡraʊnd/', zh: '地下的', type: 'adj.' },
+                { en: 'level', ph: '/ˈlevl/', zh: '水平', type: 'n.' },
+                { en: 'quarter', ph: '/ˈkwɔːtə(r)/', zh: '四分之一', type: 'n.' }
+            ],
+            // 第三关：地理和景观词汇（10对）
+            [
+                { en: 'landscape', ph: '/ˈlændskeɪp/', zh: '风景，地形', type: 'n.' },
+                { en: 'attraction', ph: '/əˈtrækʃn/', zh: '向往的地方，吸引', type: 'n.' },
+                { en: 'watchtower', ph: '/ˈwɒtʃtaʊə(r)/', zh: '瞭望塔', type: 'n.' },
+                { en: 'wonder', ph: '/ˈwʌndə(r)/', zh: '奇迹', type: 'n.' },
+                { en: 'cave', ph: '/keɪv/', zh: '洞穴', type: 'n.' },
+                { en: 'step', ph: '/step/', zh: '台阶，梯级', type: 'n.' },
+                { en: 'shape', ph: '/ʃeɪp/', zh: '形状，外形', type: 'n.' },
+                { en: 'state', ph: '/steɪt/', zh: '国家，州', type: 'n.' },
+                { en: 'iron', ph: '/ˈaɪən/', zh: '铁', type: 'n.' },
+                { en: 'custom', ph: '/ˈkʌstəm/', zh: '风俗，习俗', type: 'n.' }
+            ],
+            // 第四关：动作、状态和技术词汇（10对）
+            [
+                { en: 'tiring', ph: '/ˈtaɪərɪŋ/', zh: '使人疲劳的', type: 'adj.' },
+                { en: 'hang', ph: '/hæŋ/', zh: '垂下，悬挂', type: 'vi. & vt.' },
+                { en: 'point', ph: '/pɔɪnt/', zh: '指，指向', type: 'vi.' },
+                { en: 'hire', ph: '/ˈhaɪə(r)/', zh: '租用，雇用', type: 'vt.' },
+                { en: 'take up', ph: '', zh: '占据（空间），占用（时间）', type: 'phrase' },
+                { en: 'service', ph: '/ˈsɜːvɪs/', zh: '服务，工作', type: 'n.' },
+                { en: 'either', ph: '/ˈaɪðə(r)/', zh: '两者之一', type: 'det. & pron.' },
+                { en: 'IT', ph: '/ˌaɪˈtiː/', zh: '信息技术', type: 'abbr.' },
+                { en: 'technology', ph: '/tekˈnɒlədʒi/', zh: '技术', type: 'n.' },
+                { en: 'fair', ph: '/feə(r)/', zh: '集市，庙会，展览会', type: 'n.' }
+            ]
+        ];
+
+        let gameState = {
+            score: 0,
+            selectedCard: null,
+            matchedPairs: 0,
+            totalPairs: 12, // 更新为最大配对数（第一关12对）
+            currentLevel: 1,
+            cards: [],
+            completedLevels: []
+        };
+
+        let isReviewMode = false;
+        let currentReviewLevel = 1;
+        let currentReviewIndex = 0;
+        let isAutoPlaying = false;
+        let autoPlayInterval;
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function speak(text, phonetic) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.8;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function createFireworks(x, y) {
+            for (let i = 0; i < 20; i++) {
+                const firework = document.createElement('div');
+                firework.className = 'firework';
+                firework.style.left = x + 'px';
+                firework.style.top = y + 'px';
+                firework.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                firework.style.setProperty('--tx', (Math.random() - 0.5) * 200 + 'px');
+                firework.style.setProperty('--ty', (Math.random() - 0.5) * 200 + 'px');
+                document.body.appendChild(firework);
+                setTimeout(() => firework.remove(), 1000);
+            }
+        }
+
+        function showScoreIncrement(x, y) {
+            const scoreEl = document.createElement('div');
+            scoreEl.className = 'score-increment';
+            scoreEl.textContent = '+10';
+            scoreEl.style.left = x + 'px';
+            scoreEl.style.top = y + 'px';
+            document.body.appendChild(scoreEl);
+            setTimeout(() => scoreEl.remove(), 1000);
+        }
+
+        function showLevelTransition(level) {
+            const transitionEl = document.getElementById('levelTransition');
+            transitionEl.textContent = `第 ${level} 关`;
+            transitionEl.classList.add('show');
+            setTimeout(() => transitionEl.classList.remove('show'), 2000);
+        }
+
+        function createCard(text, phonetic, type, cardType, index) {
+            const card = document.createElement('div');
+            card.className = 'word-card rounded-xl cursor-pointer';
+            
+            const content = document.createElement('div');
+            content.className = 'card-content';
+            content.innerHTML = `
+                <div class="text-lg font-medium text-gray-800">${text}</div>
+                ${phonetic && cardType === 'en' ? `<div class="phonetic">${phonetic}</div>` : ''}
+                ${type && cardType === 'en' ? `<div class="type-badge mt-2">${type}</div>` : ''}
+            `;
+            
+            card.appendChild(content);
+
+            if (phonetic && cardType === 'en') {
+                const soundBtn = document.createElement('button');
+                soundBtn.className = 'sound-btn';
+                soundBtn.innerHTML = '🔊';
+                soundBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    speak(text);
+                };
+                card.appendChild(soundBtn);
+            }
+
+            card.dataset.type = cardType;
+            card.dataset.index = index;
+            return card;
+        }
+
+        function updateProgress() {
+            const progress = (gameState.matchedPairs / gameState.totalPairs) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('matchedPairs').textContent = gameState.matchedPairs;
+            document.getElementById('totalPairs').textContent = gameState.totalPairs;
+            document.getElementById('currentLevel').textContent = gameState.currentLevel;
+            
+            // 更新关卡指示器
+            for (let i = 1; i <= 4; i++) {
+                const dot = document.getElementById(`level${i}`);
+                if (i < gameState.currentLevel) {
+                    dot.className = 'level-dot completed';
+                } else if (i === gameState.currentLevel) {
+                    dot.className = 'level-dot active';
+                } else {
+                    dot.className = 'level-dot';
+                }
+            }
+        }
+
+        function startNextLevel() {
+            if (gameState.currentLevel < 4) {
+                gameState.currentLevel++;
+                gameState.matchedPairs = 0;
+                document.getElementById('celebration').classList.remove('show');
+                showLevelTransition(gameState.currentLevel);
+                setTimeout(initializeLevel, 1000);
+            } else {
+                // 游戏通关
+                document.getElementById('celebrationTitle').textContent = '🎉 恭喜通关！';
+                document.getElementById('nextLevelBtn').textContent = '重新开始';
+                document.getElementById('nextLevelBtn').onclick = () => {
+                    gameState.currentLevel = 1;
+                    gameState.score = 0;
+                    gameState.completedLevels = [];
+                    document.getElementById('score').textContent = '0';
+                    initializeLevel();
+                };
+            }
+        }
+
+        function initializeLevel() {
+            const gameBoard = document.getElementById('gameBoard');
+            gameBoard.innerHTML = '';
+            gameState.selectedCard = null;
+            document.getElementById('celebration').classList.remove('show');
+            
+            // 获取当前关卡的单词
+            const currentLevelWords = allWords[gameState.currentLevel - 1];
+            const allCards = [];
+            
+            currentLevelWords.forEach((word, index) => {
+                allCards.push({ text: word.en, phonetic: word.ph, type: word.type, cardType: 'en', index });
+                allCards.push({ text: word.zh, phonetic: '', type: '', cardType: 'zh', index });
+            });
+
+            // 更新当前关卡的配对数量
+            gameState.totalPairs = currentLevelWords.length;
+            
+            // 打乱卡片顺序
+            gameState.cards = shuffleArray(allCards);
+
+            // 渲染卡片
+            gameState.cards.forEach((card, i) => {
+                const cardElement = createCard(card.text, card.phonetic, card.type, card.cardType, card.index);
+                cardElement.addEventListener('click', () => handleCardClick(cardElement, i));
+                gameBoard.appendChild(cardElement);
+            });
+
+            updateProgress();
+        }
+
+        function handleCardClick(card, index) {
+            if (card.classList.contains('matched') || 
+                (gameState.selectedCard && gameState.selectedCard.element === card)) {
+                return;
+            }
+
+            card.classList.add('selected');
+
+            if (!gameState.selectedCard) {
+                gameState.selectedCard = {
+                    element: card,
+                    index: index
+                };
+            } else {
+                const firstCard = gameState.selectedCard;
+                const secondCard = {
+                    element: card,
+                    index: index
+                };
+
+                if (gameState.cards[firstCard.index].index === gameState.cards[secondCard.index].index &&
+                    gameState.cards[firstCard.index].cardType !== gameState.cards[secondCard.index].cardType) {
+                    setTimeout(() => {
+                        firstCard.element.classList.add('matched');
+                        secondCard.element.classList.add('matched');
+                        gameState.matchedPairs++;
+                        gameState.score += 10;
+                        
+                        // 添加匹配成功特效
+                        const rect = firstCard.element.getBoundingClientRect();
+                        createFireworks(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                        showScoreIncrement(rect.left + rect.width / 2, rect.top);
+                        
+                        document.getElementById('score').textContent = gameState.score;
+                        updateProgress();
+
+                        if (gameState.matchedPairs === gameState.totalPairs) {
+                            setTimeout(() => {
+                                document.getElementById('finalScore').textContent = gameState.score;
+                                document.getElementById('celebrationTitle').textContent = 
+                                    gameState.currentLevel === 4 ? '🎉 恭喜通关！' : `🎉 完成第${gameState.currentLevel}关！`;
+                                document.getElementById('nextLevelBtn').textContent = 
+                                    gameState.currentLevel === 4 ? '重新开始' : '进入下一关';
+                                document.getElementById('celebration').classList.add('show');
+                                
+                                // 添加通关特效
+                                for (let i = 0; i < 5; i++) {
+                                    setTimeout(() => {
+                                        createFireworks(
+                                            Math.random() * window.innerWidth,
+                                            Math.random() * window.innerHeight
+                                        );
+                                    }, i * 200);
+                                }
+                            }, 1000);
+                        }
+                    }, 500);
+                } else {
+                    setTimeout(() => {
+                        firstCard.element.classList.remove('selected');
+                        secondCard.element.classList.remove('selected');
+                    }, 1000);
+                }
+
+                gameState.selectedCard = null;
+            }
+        }
+
+        function startReviewMode() {
+            isReviewMode = true;
+            currentReviewLevel = 1;
+            currentReviewIndex = 0;
+            document.getElementById('gameBoard').classList.add('review-mode');
+            document.querySelector('.review-controls').style.display = 'flex';
+            showReviewCards();
+        }
+
+        function exitReviewMode() {
+            isReviewMode = false;
+            stopAutoPlay();
+            document.getElementById('gameBoard').classList.remove('review-mode');
+            document.querySelector('.review-controls').style.display = 'none';
+            initializeLevel();
+        }
+
+        function showReviewCards() {
+            const gameBoard = document.getElementById('gameBoard');
+            gameBoard.innerHTML = '';
+            
+            const currentWords = allWords[currentReviewLevel - 1];
+            const startIndex = currentReviewIndex;
+            const endIndex = Math.min(startIndex + 5, currentWords.length);
+            
+            for (let i = startIndex; i < endIndex; i++) {
+                const word = currentWords[i];
+                const enCard = createCard(word.en, word.ph, word.type, 'en', i);
+                const zhCard = createCard(word.zh, '', '', 'zh', i);
+                
+                enCard.classList.add('review-card');
+                zhCard.classList.add('review-card');
+                enCard.classList.remove('cursor-pointer');
+                zhCard.classList.remove('cursor-pointer');
+                
+                gameBoard.appendChild(enCard);
+                gameBoard.appendChild(zhCard);
+            }
+
+            updateReviewControls();
+        }
+
+        function updateReviewControls() {
+            const currentWords = allWords[currentReviewLevel - 1];
+            document.getElementById('prevBtn').classList.toggle('disabled', currentReviewIndex === 0);
+            document.getElementById('nextBtn').classList.toggle('disabled', 
+                currentReviewIndex + 5 >= currentWords.length && currentReviewLevel === 4);
+        }
+
+        function nextReviewGroup() {
+            const currentWords = allWords[currentReviewLevel - 1];
+            if (currentReviewIndex + 5 >= currentWords.length) {
+                if (currentReviewLevel < 4) {
+                    currentReviewLevel++;
+                    currentReviewIndex = 0;
+                }
+            } else {
+                currentReviewIndex += 5;
+            }
+            showReviewCards();
+        }
+
+        function prevReviewGroup() {
+            if (currentReviewIndex === 0) {
+                if (currentReviewLevel > 1) {
+                    currentReviewLevel--;
+                    const currentWords = allWords[currentReviewLevel - 1];
+                    currentReviewIndex = Math.floor((currentWords.length - 1) / 5) * 5;
+                }
+            } else {
+                currentReviewIndex = Math.max(0, currentReviewIndex - 5);
+            }
+            showReviewCards();
+        }
+
+        function startAutoPlay() {
+            if (isAutoPlaying) {
+                stopAutoPlay();
+                return;
+            }
+
+            isAutoPlaying = true;
+            document.getElementById('autoPlayBtn').textContent = '停止播放';
+            document.getElementById('autoPlayBtn').classList.add('bg-yellow-600', 'hover:bg-yellow-700');
+
+            const playNextWord = () => {
+                const currentWords = allWords[currentReviewLevel - 1];
+                const cards = document.querySelectorAll('.word-card[data-type="en"]');
+                cards.forEach((card, index) => {
+                    setTimeout(() => {
+                        card.classList.add('selected');
+                        const word = currentWords[currentReviewIndex + index];
+                        if (word) speak(word.en);
+                        setTimeout(() => card.classList.remove('selected'), 1500);
+                    }, index * 2000);
+                });
+
+                setTimeout(() => {
+                    if (isAutoPlaying) {
+                        const canMoveNext = currentReviewIndex + 5 < currentWords.length || currentReviewLevel < 4;
+                        if (canMoveNext) {
+                            nextReviewGroup();
+                            autoPlayInterval = setTimeout(playNextWord, 1000);
+                        } else {
+                            stopAutoPlay();
+                        }
+                    }
+                }, cards.length * 2000);
+            };
+
+            playNextWord();
+        }
+
+        function stopAutoPlay() {
+            isAutoPlaying = false;
+            clearTimeout(autoPlayInterval);
+            document.getElementById('autoPlayBtn').textContent = '自动播放';
+            document.getElementById('autoPlayBtn').classList.remove('bg-yellow-600', 'hover:bg-yellow-700');
+        }
+
+        // 初始化游戏
+        document.getElementById('newGameBtn').addEventListener('click', () => {
+            gameState.currentLevel = 1;
+            gameState.score = 0;
+            gameState.completedLevels = [];
+            document.getElementById('score').textContent = '0';
+            initializeLevel();
+        });
+        document.getElementById('nextLevelBtn').addEventListener('click', startNextLevel);
+        document.getElementById('reviewModeBtn').addEventListener('click', startReviewMode);
+        document.getElementById('exitReviewBtn').addEventListener('click', exitReviewMode);
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (!document.getElementById('prevBtn').classList.contains('disabled')) {
+                prevReviewGroup();
+            }
+        });
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (!document.getElementById('nextBtn').classList.contains('disabled')) {
+                nextReviewGroup();
+            }
+        });
+        document.getElementById('autoPlayBtn').addEventListener('click', startAutoPlay);
+        initializeLevel();
+    </script>
+</body>
+</html> 
