@@ -285,133 +285,561 @@
             cursor: not-allowed;
             transform: none;
         }
+        .navigation-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f6f9fc 0%, #edf2f7 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .nav-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2b6cb0;
+            margin-bottom: 2rem;
+            text-align: center;
+            line-height: 1.2;
+        }
+        .nav-subtitle {
+            font-size: 1.5rem;
+            color: #4a5568;
+            margin-bottom: 3rem;
+        }
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            max-width: 800px;
+            width: 90%;
+            padding: 1rem;
+        }
+        @media (min-width: 640px) {
+            .nav-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        .nav-button {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #4a5568;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 120px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .nav-button:hover {
+            transform: translateY(-2px);
+            border-color: #4299e1;
+            box-shadow: 0 10px 15px rgba(66, 153, 225, 0.2);
+        }
+        .nav-button.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f7fafc;
+        }
+        .nav-button.disabled:hover {
+            transform: none;
+            border-color: #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .nav-button-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .back-button:hover {
+            transform: translateX(-2px);
+        }
     </style>
 </head>
 <body class="py-12">
-    <div class="game-stats">
-        <div class="level-indicator">
-            <div class="level-dot" id="level1"></div>
-            <div class="level-dot" id="level2"></div>
-            <div class="level-dot" id="level3"></div>
-            <div class="level-dot" id="level4"></div>
-        </div>
-        <div class="flex items-center justify-between mb-2">
-            <span class="text-gray-600">关卡进度:</span>
-            <span class="text-blue-600 font-medium"><span id="matchedPairs">0</span>/<span id="totalPairs">0</span></span>
-        </div>
-        <div class="progress-bar">
-            <div id="progressBar" class="progress-bar-fill" style="width: 0%"></div>
-        </div>
-        <div class="mt-2 text-center">
-            <span class="text-gray-600">总分:</span>
-            <span id="score" class="text-blue-600 font-bold text-xl ml-2">0</span>
-        </div>
-    </div>
-
-    <div class="container mx-auto px-4">
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-blue-700 mb-6">英语单词连连看</h1>
-            <div class="text-xl text-gray-600 mb-4">
-                第 <span id="currentLevel" class="text-blue-600 font-bold">1</span> 关
-            </div>
-            <div class="flex justify-center gap-4 mt-4">
-                <button id="newGameBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                    重新开始
-                </button>
-                <button id="reviewModeBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                    复习模式
-                </button>
-            </div>
-        </div>
-
-        <div id="gameBoard" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 max-w-6xl mx-auto">
-            <!-- 卡片将通过 JavaScript 动态生成 -->
-        </div>
-    </div>
-
-    <div id="celebration" class="celebration">
-        <div class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center bg-white p-8 rounded-2xl shadow-2xl">
-            <div class="text-5xl font-bold text-blue-600 mb-6" id="celebrationTitle">🎉 完成第1关！</div>
-            <div class="text-2xl text-gray-600 mb-6">当前得分: <span id="finalScore" class="font-bold text-blue-600">0</span></div>
-            <button id="nextLevelBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                进入下一关
+    <div id="gradeSelection" class="navigation-screen">
+        <h1 class="nav-title">英语单词连连看</h1>
+        <div class="nav-subtitle">选择年级</div>
+        <div class="nav-grid">
+            <button class="nav-button disabled">
+                <div class="nav-button-icon">📚</div>
+                初一上册
+            </button>
+            <button class="nav-button disabled">
+                <div class="nav-button-icon">📚</div>
+                初一下册
+            </button>
+            <button class="nav-button disabled">
+                <div class="nav-button-icon">📚</div>
+                初二上册
+            </button>
+            <button class="nav-button disabled">
+                <div class="nav-button-icon">📚</div>
+                初二下册
+            </button>
+            <button class="nav-button disabled">
+                <div class="nav-button-icon">📚</div>
+                初三上册
+            </button>
+            <button class="nav-button" id="grade9-2">
+                <div class="nav-button-icon">📚</div>
+                初三下册
             </button>
         </div>
     </div>
 
-    <div class="review-controls" style="display: none;">
-        <button id="prevBtn" class="review-btn disabled">上一组</button>
-        <button id="autoPlayBtn" class="review-btn">自动播放</button>
-        <button id="nextBtn" class="review-btn">下一组</button>
-        <button id="exitReviewBtn" class="review-btn bg-red-600 hover:bg-red-700">退出复习</button>
+    <div id="unitSelection" class="navigation-screen" style="display: none;">
+        <button class="back-button" id="backToGrade">
+            ← 返回年级选择
+        </button>
+        <h1 class="nav-title">初三下册</h1>
+        <div class="nav-subtitle">选择单元</div>
+        <div class="nav-grid">
+            <button class="nav-button" id="unit1">
+                <div class="nav-button-icon">📖</div>
+                第一单元
+            </button>
+            <button class="nav-button disabled">
+                <div class="nav-button-icon">📖</div>
+                第二单元
+            </button>
+            <button class="nav-button disabled">
+                <div class="nav-button-icon">📖</div>
+                第三单元
+            </button>
+            <button class="nav-button disabled">
+                <div class="nav-button-icon">📖</div>
+                第四单元
+            </button>
+            <button class="nav-button disabled">
+                <div class="nav-button-icon">📖</div>
+                第五单元
+            </button>
+            <button class="nav-button disabled">
+                <div class="nav-button-icon">📖</div>
+                第六单元
+            </button>
+            <button class="nav-button disabled">
+                <div class="nav-button-icon">📖</div>
+                第七单元
+            </button>
+            <button class="nav-button disabled">
+                <div class="nav-button-icon">📖</div>
+                第八单元
+            </button>
+        </div>
     </div>
 
-    <div id="levelTransition" class="level-transition"></div>
+    <div id="gameContainer" style="display: none;">
+        <button class="back-button" id="backToUnit">
+            ← 返回单元选择
+        </button>
+        <div class="game-stats">
+            <div class="level-indicator">
+                <div class="level-dot" id="level1"></div>
+                <div class="level-dot" id="level2"></div>
+                <div class="level-dot" id="level3"></div>
+            </div>
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-gray-600">关卡进度:</span>
+                <span class="text-blue-600 font-medium"><span id="matchedPairs">0</span>/<span id="totalPairs">0</span></span>
+            </div>
+            <div class="progress-bar">
+                <div id="progressBar" class="progress-bar-fill" style="width: 0%"></div>
+            </div>
+            <div class="mt-2 text-center">
+                <span class="text-gray-600">总分:</span>
+                <span id="score" class="text-blue-600 font-bold text-xl ml-2">0</span>
+            </div>
+        </div>
+
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-blue-700 mb-6">英语单词连连看</h1>
+                <div class="text-xl text-gray-600 mb-4">
+                    第 <span id="currentLevel" class="text-blue-600 font-bold">1</span> 关
+                </div>
+                <div class="flex justify-center gap-4 mt-4">
+                    <button id="newGameBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        重新开始
+                    </button>
+                    <button id="reviewModeBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        复习模式
+                    </button>
+                </div>
+            </div>
+
+            <div id="gameBoard" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 max-w-6xl mx-auto">
+                <!-- 卡片将通过 JavaScript 动态生成 -->
+            </div>
+        </div>
+
+        <div id="celebration" class="celebration">
+            <div class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center bg-white p-8 rounded-2xl shadow-2xl">
+                <div class="text-5xl font-bold text-blue-600 mb-6" id="celebrationTitle">🎉 完成第1关！</div>
+                <div class="text-2xl text-gray-600 mb-6">当前得分: <span id="finalScore" class="font-bold text-blue-600">0</span></div>
+                <button id="nextLevelBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                    进入下一关
+                </button>
+            </div>
+        </div>
+
+        <div class="review-controls" style="display: none;">
+            <button id="prevBtn" class="review-btn disabled">上一组</button>
+            <button id="autoPlayBtn" class="review-btn">自动播放</button>
+            <button id="nextBtn" class="review-btn">下一组</button>
+            <button id="exitReviewBtn" class="review-btn bg-red-600 hover:bg-red-700">退出复习</button>
+        </div>
+
+        <div id="levelTransition" class="level-transition"></div>
+    </div>
 
     <script>
-        const allWords = [
-            // 第一关：中国文化相关词汇（12对）
-            [
-                { en: 'Chinese knot', ph: '/nɒt/', zh: '中国结', type: 'n.' },
-                { en: 'Chinese opera', ph: '', zh: '中国戏曲', type: 'n.' },
-                { en: 'Chinese paper-cutting', ph: '', zh: '中国剪纸', type: 'n.' },
-                { en: 'chopsticks', ph: '/ˈtʃɒpstɪks/', zh: '筷子', type: 'n.' },
-                { en: 'dragon dance', ph: '', zh: '舞龙', type: 'n.' },
-                { en: 'emperor', ph: '/ˈempərər/', zh: '皇帝', type: 'n.' },
-                { en: 'sari', ph: '/ˈsɑːri/', zh: '莎丽（印度女民族服饰）', type: 'n.' },
-                { en: 'Indian', ph: '/ˈɪndiən/', zh: '印度（人）的', type: 'adj.' },
-                { en: 'Japanese', ph: '/ˌdʒæpəˈniːz/', zh: '日本（人）的', type: 'adj.' },
-                { en: 'Hindi', ph: '/ˈhɪndi/', zh: '印地语', type: 'n.' },
-                { en: 'billion', ph: '/ˈbɪljən/', zh: '十亿', type: 'num.' },
-                { en: 'population', ph: '/ˌpɒpjuˈleɪʃn/', zh: '人口', type: 'n.' }
-            ],
-            // 第二关：位置和方向词汇（10对）
-            [
-                { en: 'middle', ph: '/ˈmɪdl/', zh: '中间，中央', type: 'n.' },
-                { en: 'in the middle of', ph: '', zh: '在...中间', type: 'phrase' },
-                { en: 'eastern', ph: '/ˈiːstən/', zh: '东部的，东方的', type: 'adj.' },
-                { en: 'south-east', ph: '', zh: '东南方', type: 'n.' },
-                { en: 'location', ph: '/ləʊˈkeɪʃn/', zh: '地点，方位', type: 'n.' },
-                { en: 'lie', ph: '/laɪ/', zh: '位于', type: 'vi.' },
-                { en: 'upwards', ph: '/ˈʌpwədz/', zh: '向上', type: 'adv.' },
-                { en: 'underground', ph: '/ˌʌndəˈɡraʊnd/', zh: '地下的', type: 'adj.' },
-                { en: 'level', ph: '/ˈlevl/', zh: '水平', type: 'n.' },
-                { en: 'quarter', ph: '/ˈkwɔːtə(r)/', zh: '四分之一', type: 'n.' }
-            ],
-            // 第三关：地理和景观词汇（10对）
-            [
-                { en: 'landscape', ph: '/ˈlændskeɪp/', zh: '风景，地形', type: 'n.' },
-                { en: 'attraction', ph: '/əˈtrækʃn/', zh: '向往的地方，吸引', type: 'n.' },
-                { en: 'watchtower', ph: '/ˈwɒtʃtaʊə(r)/', zh: '瞭望塔', type: 'n.' },
-                { en: 'wonder', ph: '/ˈwʌndə(r)/', zh: '奇迹', type: 'n.' },
-                { en: 'cave', ph: '/keɪv/', zh: '洞穴', type: 'n.' },
-                { en: 'step', ph: '/step/', zh: '台阶，梯级', type: 'n.' },
-                { en: 'shape', ph: '/ʃeɪp/', zh: '形状，外形', type: 'n.' },
-                { en: 'state', ph: '/steɪt/', zh: '国家，州', type: 'n.' },
-                { en: 'iron', ph: '/ˈaɪən/', zh: '铁', type: 'n.' },
-                { en: 'custom', ph: '/ˈkʌstəm/', zh: '风俗，习俗', type: 'n.' }
-            ],
-            // 第四关：动作、状态和技术词汇（10对）
-            [
-                { en: 'tiring', ph: '/ˈtaɪərɪŋ/', zh: '使人疲劳的', type: 'adj.' },
-                { en: 'hang', ph: '/hæŋ/', zh: '垂下，悬挂', type: 'vi. & vt.' },
-                { en: 'point', ph: '/pɔɪnt/', zh: '指，指向', type: 'vi.' },
-                { en: 'hire', ph: '/ˈhaɪə(r)/', zh: '租用，雇用', type: 'vt.' },
-                { en: 'take up', ph: '', zh: '占据（空间），占用（时间）', type: 'phrase' },
-                { en: 'service', ph: '/ˈsɜːvɪs/', zh: '服务，工作', type: 'n.' },
-                { en: 'either', ph: '/ˈaɪðə(r)/', zh: '两者之一', type: 'det. & pron.' },
-                { en: 'IT', ph: '/ˌaɪˈtiː/', zh: '信息技术', type: 'abbr.' },
-                { en: 'technology', ph: '/tekˈnɒlədʒi/', zh: '技术', type: 'n.' },
-                { en: 'fair', ph: '/feə(r)/', zh: '集市，庙会，展览会', type: 'n.' }
-            ]
-        ];
+        const grade9_2_words = {
+            unit1: {
+                level1: [
+                    { en: 'step', ph: '/step/', zh: 'n.台阶，梯级', type: 'n.' },
+                    { en: 'middle', ph: '/ˈmɪdl/', zh: 'n.中间，中央', type: 'n.' },
+                    { en: 'in the middle of', ph: '', zh: '在...中间', type: 'phrase' },
+                    { en: 'shape', ph: '/ʃeɪp/', zh: 'n.形状，外形', type: 'n.' },
+                    { en: 'point', ph: '/pɔɪnt/', zh: 'vi.指，指向', type: 'v.' },
+                    { en: 'level', ph: '/ˈlevl/', zh: 'n.水平', type: 'n.' },
+                    { en: 'service', ph: '/ˈsɜːvɪs/', zh: 'n.服务，工作', type: 'n.' }
+                ],
+                level2: [
+                    { en: 'Chinese knot', ph: '', zh: 'n.中国结', type: 'n.' },
+                    { en: 'Chinese opera', ph: '', zh: 'n.中国戏曲', type: 'n.' },
+                    { en: 'Chinese paper-cutting', ph: '', zh: 'n.中国剪纸', type: 'n.' },
+                    { en: 'chopsticks', ph: '/ˈtʃɒpstɪks/', zh: 'n.筷子', type: 'n.' },
+                    { en: 'dragon dance', ph: '', zh: 'n.舞龙', type: 'n.' },
+                    { en: 'custom', ph: '/ˈkʌstəm/', zh: 'n.风俗，习俗', type: 'n.' },
+                    { en: 'fair', ph: '/feə(r)/', zh: 'n.集市，庙会', type: 'n.' },
+                    { en: 'sari', ph: '/ˈsɑːri/', zh: 'n.莎丽', type: 'n.' }
+                ],
+                level3: [
+                    { en: 'landscape', ph: '/ˈlændskeɪp/', zh: 'n.风景，地形', type: 'n.' },
+                    { en: 'attraction', ph: '/əˈtrækʃn/', zh: 'n.吸引的地方', type: 'n.' },
+                    { en: 'watchtower', ph: '/ˈwɒtʃtaʊə(r)/', zh: 'n.瞭望塔', type: 'n.' },
+                    { en: 'wonder', ph: '/ˈwʌndə(r)/', zh: 'n.奇迹', type: 'n.' },
+                    { en: 'cave', ph: '/keɪv/', zh: 'n.洞穴', type: 'n.' },
+                    { en: 'underground', ph: '/ˌʌndəˈɡraʊnd/', zh: 'adj.地下的', type: 'adj.' },
+                    { en: 'location', ph: '/ləʊˈkeɪʃn/', zh: 'n.地点，方位', type: 'n.' }
+                ],
+                level4: [
+                    { en: 'population', ph: '/ˌpɒpjuˈleɪʃn/', zh: 'n.人口', type: 'n.' },
+                    { en: 'technology', ph: '/tekˈnɒlədʒi/', zh: 'n.技术', type: 'n.' },
+                    { en: 'IT', ph: '/ˌaɪˈtiː/', zh: 'n.信息技术', type: 'n.' },
+                    { en: 'billion', ph: '/ˈbɪljən/', zh: 'num.十亿', type: 'num.' },
+                    { en: 'iron', ph: '/ˈaɪən/', zh: 'n.铁', type: 'n.' },
+                    { en: 'Japanese', ph: '/ˌdʒæpəˈniːz/', zh: 'adj.日本(人)的', type: 'adj.' },
+                    { en: 'Indian', ph: '/ˈɪndiən/', zh: 'adj.印度(人)的', type: 'adj.' }
+                ],
+                level5: [
+                    { en: 'tiring', ph: '/ˈtaɪərɪŋ/', zh: 'adj.使人疲劳的', type: 'adj.' },
+                    { en: 'raising', ph: '/ˈreɪzɪŋ/', zh: 'n.升高', type: 'n.' },
+                    { en: 'lie', ph: '/laɪ/', zh: 'vi.位于', type: 'v.' },
+                    { en: 'hang', ph: '/hæŋ/', zh: 'v.悬挂，垂下', type: 'v.' },
+                    { en: 'eastern', ph: '/ˈiːstən/', zh: 'adj.东部的', type: 'adj.' },
+                    { en: 'south-east', ph: '', zh: 'n.东南方', type: 'n.' },
+                    { en: 'take up', ph: '', zh: '占用(空间)', type: 'phrase' }
+                ]
+            }
+        };
+
+        const grade7_1_words = {
+            unit1: {
+                level1: [
+                    { en: 'oh', ph: '[əʊ]', zh: 'excl.哦，啊', type: 'excl.' },
+                    { en: 'e-dog', ph: '', zh: 'n.电子狗', type: 'n.' },
+                    { en: 'master', ph: '[ˈmɑːstə]', zh: 'n.主人；大师', type: 'n.' },
+                    { en: 'grade', ph: '[greid]', zh: 'n.年级', type: 'n.' },
+                    { en: 'student', ph: '[ˈstjuːdənt]', zh: 'n.学生', type: 'n.' },
+                    { en: 'reading', ph: '[ˈriːdɪŋ]', zh: 'n.阅读', type: 'n.' },
+                    { en: 'classmate', ph: '[ˈklɑːsmeit]', zh: 'n.同班同学', type: 'n.' },
+                    { en: 'classroom', ph: '[ˈklɑːsrʊm]', zh: 'n.教室', type: 'n.' }
+                ],
+                level2: [
+                    { en: 'after school', ph: '', zh: '放学后', type: 'phrase' },
+                    { en: 'dancing', ph: '', zh: 'n.跳舞，舞蹈', type: 'n.' },
+                    { en: 'swimming', ph: '[ˈswɪmɪŋ]', zh: 'n.游泳', type: 'n.' },
+                    { en: 'hobby', ph: '[ˈhɒbi]', zh: 'n.业余爱好', type: 'n.' },
+                    { en: 'age', ph: '[eɪdʒ]', zh: 'n.年龄', type: 'n.' },
+                    { en: 'looks', ph: '', zh: 'n.相貌，容貌', type: 'n.' },
+                    { en: 'cute', ph: '[kjuːt]', zh: 'adj.可爱的', type: 'adj.' }
+                ],
+                level3: [
+                    { en: 'slim', ph: '[slɪm]', zh: 'adj.苗条的', type: 'adj.' },
+                    { en: 'be good at', ph: '', zh: '擅长于', type: 'phrase' },
+                    { en: 'over', ph: '[ˈəʊvə]', zh: 'adv.穿过', type: 'adv.' },
+                    { en: 'glad', ph: '[glæd]', zh: 'adj.高兴的', type: 'adj.' },
+                    { en: 'everyone', ph: '[ˈevriwʌn]', zh: 'pron.每个人', type: 'pron.' },
+                    { en: 'come from', ph: '', zh: '来自', type: 'phrase' },
+                    { en: 'glasses', ph: '[ˈglɑːsɪz]', zh: 'n.(复)眼镜', type: 'n.' }
+                ]
+            },
+            unit2: {
+                level1: [
+                    { en: 'tennis', ph: '[ˈtenɪs]', zh: 'n.网球', type: 'n.' },
+                    { en: 'volleyball', ph: '[ˈvɒlibɔːl]', zh: 'n.排球', type: 'n.' },
+                    { en: 'table tennis', ph: '', zh: 'n.乒乓球', type: 'n.' },
+                    { en: 'player', ph: '[ˈpleɪə]', zh: 'n.运动员', type: 'n.' },
+                    { en: 'team', ph: '[tiːm]', zh: 'n.队；组', type: 'n.' },
+                    { en: 'match', ph: '[mætʃ]', zh: 'n.比赛，竞赛', type: 'n.' },
+                    { en: 'hero', ph: '[ˈhɪərəʊ]', zh: 'n.偶像；英雄', type: 'n.' }
+                ],
+                level2: [
+                    { en: 'walking', ph: '[ˈwɔːkɪŋ]', zh: 'n.散步，步行', type: 'n.' },
+                    { en: 'go swimming', ph: '', zh: '去游泳', type: 'phrase' },
+                    { en: 'enjoy', ph: '[ɪnˈdʒɔɪ]', zh: '享受...的乐趣；欣赏；喜爱', type: 'v.' },
+                    { en: 'free', ph: '[friː]', zh: 'adj.空闲的', type: 'adj.' },
+                    { en: 'fun', ph: '[fʌn]', zh: 'n.享乐，乐趣；有趣的事', type: 'n.' },
+                    { en: 'weekend', ph: '[ˈwiːkend]', zh: 'n.周末', type: 'n.' },
+                    { en: 'at/on weekends', ph: '', zh: '在周末', type: 'phrase' },
+                    { en: 'shop', ph: '[ʃɒp]', zh: 'v.购物', type: 'v.' }
+                ],
+                level3: [
+                    { en: 'member', ph: '[ˈmembə]', zh: 'n.成员', type: 'n.' },
+                    { en: 'club', ph: '[klʌb]', zh: 'n.俱乐部', type: 'n.' },
+                    { en: 'time', ph: '[taɪm]', zh: 'n.次，回', type: 'n.' },
+                    { en: 'bowl', ph: '[bəʊl]', zh: 'n.碗，盆', type: 'n.' },
+                    { en: 'lot', ph: '[lɒt]', zh: 'n.许多，好些', type: 'n.' },
+                    { en: 'a lot of', ph: '', zh: '许多；大量', type: 'phrase' },
+                    { en: 'else', ph: '[els]', zh: 'adv.另外；其他', type: 'adv.' }
+                ],
+                level4: [
+                    { en: 'really', ph: '[ˈrɪəli]', zh: '(表兴趣或惊讶的)的确，确实', type: 'adv.' },
+                    { en: 'true', ph: '[truː]', zh: 'adj.真的，真实的', type: 'adj.' },
+                    { en: 'come true', ph: '[kʌm truː]', zh: '变为现实，成为事实', type: 'phrase' },
+                    { en: 'hope', ph: '[həʊp]', zh: 'vt.希望', type: 'v.' },
+                    { en: 'dream', ph: '[driːm]', zh: 'n.梦想；梦', type: 'n.' },
+                    { en: 'drawing', ph: '[ˈdrɔːɪŋ]', zh: 'n.画画', type: 'n.' },
+                    { en: 'of course', ph: '[əv kɔːs]', zh: '当然', type: 'phrase' },
+                    { en: 'talk about/of', ph: '', zh: '谈论', type: 'phrase' }
+                ]
+            },
+            unit3: {
+                level1: [
+                    { en: 'biology', ph: '[baɪˈɒlədʒi]', zh: 'n.生物', type: 'n.' },
+                    { en: 'geography', ph: '[dʒiˈɒgrəfi]', zh: 'n.地理', type: 'n.' },
+                    { en: 'history', ph: '[ˈhɪstəri]', zh: 'n.历史', type: 'n.' },
+                    { en: 'meeting', ph: '[ˈmiːtɪŋ]', zh: 'n.会议，集会', type: 'n.' },
+                    { en: 'reading room', ph: '', zh: 'n.阅览室', type: 'n.' },
+                    { en: 'date', ph: '[deɪt]', zh: 'n.日期', type: 'n.' },
+                    { en: 'diary', ph: '[ˈdaɪəri]', zh: 'n.日记', type: 'n.' },
+                    { en: 'letter', ph: '[ˈletə]', zh: 'n.信，函', type: 'n.' }
+                ],
+                level2: [
+                    { en: 'building', ph: '[ˈbɪldɪŋ]', zh: 'n.建筑物，房子，楼房', type: 'n.' },
+                    { en: 'ground', ph: '[graʊnd]', zh: 'n.地，地面', type: 'n.' },
+                    { en: 'ground floor', ph: '', zh: '一楼/地面一楼', type: 'phrase' },
+                    { en: 'hall', ph: '[hɔːl]', zh: 'n.礼堂，大厅', type: 'n.' },
+                    { en: 'wall', ph: '[wɔːl]', zh: 'n.墙', type: 'n.' },
+                    { en: 'gate', ph: '[geɪt]', zh: 'n.大门', type: 'n.' },
+                    { en: 'front', ph: '[frʌnt]', zh: 'n.前面', type: 'n.' },
+                    { en: 'in front of', ph: '', zh: '在...前面', type: 'phrase' }
+                ],
+                level3: [
+                    { en: 'get up', ph: '[getʌp]', zh: '起床', type: 'phrase' },
+                    { en: 'go to school', ph: '', zh: '去上学', type: 'phrase' },
+                    { en: 'a.m.', ph: '[ˈæntɪmeˈrɪdiəm]', zh: '午前/上午，上午...点', type: 'abbr.' },
+                    { en: 'p.m.', ph: '[ˈpiːˈem]', zh: 'abbr.下午，午后', type: 'abbr.' },
+                    { en: 'after class', ph: '', zh: '下课后', type: 'phrase' },
+                    { en: 'on foot', ph: '', zh: '走路，步行', type: 'phrase' },
+                    { en: 'take', ph: '[teɪk]', zh: 'v.需要...时间；带回', type: 'v.' }
+                ],
+                level4: [
+                    { en: 'phone', ph: '[fəʊn]', zh: 'n.电话', type: 'n.' },
+                    { en: 'on the phone', ph: '', zh: '通电话', type: 'phrase' },
+                    { en: 'show', ph: '[ʃəʊ]', zh: 'vt.给...看，演', type: 'v.' },
+                    { en: 'show sb around', ph: '', zh: '领某人参观', type: 'phrase' },
+                    { en: 'look at', ph: '', zh: '看一看', type: 'phrase' },
+                    { en: 'let me see', ph: '', zh: '让我想想', type: 'phrase' },
+                    { en: 'pardon', ph: '', zh: '什么，请再说一遍', type: 'interj.' }
+                ],
+                level5: [
+                    { en: 'which', ph: '[hwɪtʃ]', zh: 'pron.哪一个', type: 'pron.' },
+                    { en: 'so', ph: '[səʊ]', zh: 'conj.因此，所以', type: 'conj.' },
+                    { en: 'around', ph: '[əˈraʊnd]', zh: 'adv.到处，向各处', type: 'adv.' },
+                    { en: 'from...To...', ph: '', zh: '从...到...', type: 'phrase' },
+                    { en: 'away', ph: '[əˈweɪ]', zh: 'adv.离开，远离', type: 'adv.' },
+                    { en: 'far away from', ph: '', zh: '远离', type: 'phrase' },
+                    { en: 'only', ph: '[ˈəʊnli]', zh: 'adv.只，仅仅，仅', type: 'adv.' }
+                ],
+                level6: [
+                    { en: 'bright', ph: '[braɪt]', zh: 'adj.明亮的', type: 'adj.' },
+                    { en: 'modern', ph: '[ˈmɒdə(r)n]', zh: 'adj.现代的，新式的', type: 'adj.' },
+                    { en: 'best', ph: '[best]', zh: '(well)的最高级，最好地', type: 'adj.' },
+                    { en: 'all the best', ph: '', zh: '一切顺利，万事如意', type: 'phrase' },
+                    { en: 'few', ph: '[fjuː]', zh: '不多(的)，少数(的)', type: 'adj.' },
+                    { en: 'a few', ph: '', zh: '几个，少数', type: 'phrase' },
+                    { en: 'kind', ph: '[kaɪnd]', zh: 'n.种类', type: 'n.' },
+                    { en: 'all kind of', ph: '', zh: '各种各样的', type: 'phrase' }
+                ]
+            },
+            unit4: {
+                level1: [
+                    { en: 'wake', ph: '[weɪk]', zh: 'v.t.&v.i.醒，醒来', type: 'v.' },
+                    { en: 'wake up', ph: '', zh: '醒来', type: 'phrase' },
+                    { en: 'have breakfast', ph: '', zh: '吃早饭', type: 'phrase' },
+                    { en: 'rest', ph: '[rest]', zh: 'n.休息，歇息', type: 'n.' },
+                    { en: 'go to bed', ph: '', zh: '去睡觉', type: 'phrase' },
+                    { en: 'in the morning', ph: '', zh: '在上午', type: 'phrase' },
+                    { en: 'usually', ph: '[ˈjuːʒʊəli]', zh: 'adv.通常，经常', type: 'adv.' },
+                    { en: 'never', ph: '[ˈnevə]', zh: 'adv.从不，永不', type: 'adv.' }
+                ],
+                level2: [
+                    { en: 'start', ph: '[stɑːt]', zh: 'v.t.&v.i.开始，开干', type: 'v.' },
+                    { en: 'quarter', ph: '[ˈkwɔːtə]', zh: 'n.一刻钟', type: 'n.' },
+                    { en: 'past', ph: '[pɑːst]', zh: 'prep.过去', type: 'prep.' },
+                    { en: 'first', ph: '[fɜːst]', zh: 'adv.首先', type: 'adv.' },
+                    { en: 'then', ph: '[ðen]', zh: 'adv.然后，接着', type: 'adv.' },
+                    { en: 'once', ph: '[wʌns]', zh: 'adv.一次', type: 'adv.' },
+                    { en: 'twice', ph: '[twaɪs]', zh: 'adv.两次', type: 'adv.' }
+                ],
+                level3: [
+                    { en: 'have lessons', ph: '', zh: '上课', type: 'phrase' },
+                    { en: 'after-school', ph: '', zh: 'adj.课外的，课后的', type: 'adj.' },
+                    { en: 'activity', ph: '[ækˈtɪvɪti]', zh: 'n.活动', type: 'n.' },
+                    { en: 'homework', ph: '[ˈhəʊmwɜːk]', zh: 'n.家庭作业', type: 'n.' },
+                    { en: 'be late for', ph: '', zh: '迟到', type: 'phrase' },
+                    { en: 'practise', ph: '[ˈpræktɪs]', zh: 'v.t.&v.i.实习，训练', type: 'v.' },
+                    { en: 'learn', ph: '[lɜːn]', zh: 'v.t.&v.i.学习，学会', type: 'v.' }
+                ],
+                level4: [
+                    { en: 'out', ph: '[aʊt]', zh: 'adv.出去，向外，外出', type: 'adv.' },
+                    { en: 'go out', ph: '', zh: '出去', type: 'phrase' },
+                    { en: 'hill', ph: '[hɪl]', zh: 'n.小山', type: 'n.' },
+                    { en: 'seldom', ph: '[ˈseldəm]', zh: 'adv.很少，不常', type: 'adv.' },
+                    { en: 'each', ph: '[iːtʃ]', zh: 'pron.每人，每个', type: 'pron.' },
+                    { en: 'other', ph: '[ˈʌðə]', zh: 'pron.另外，其他', type: 'pron.' },
+                    { en: 'each other', ph: '', zh: '互相，彼此', type: 'phrase' }
+                ],
+                level5: [
+                    { en: 'have fun', ph: '', zh: '玩得高兴', type: 'phrase' },
+                    { en: 'have a good time', ph: '', zh: '过得愉快，玩得高兴', type: 'phrase' },
+                    { en: 'roller skating', ph: '[ˈrəʊlə skeɪtɪŋ]', zh: 'n.滑旱冰', type: 'n.' },
+                    { en: 'picnic', ph: '[ˈpɪknɪk]', zh: 'n.野餐', type: 'n.' },
+                    { en: 'museum', ph: '[mjuːˈzɪəm]', zh: 'n.博物馆', type: 'n.' },
+                    { en: 'win', ph: '[wɪn]', zh: 'n.胜利，获胜', type: 'n.' },
+                    { en: 'luck', ph: '[lʌk]', zh: 'n.好运，幸运', type: 'n.' }
+                ],
+                level6: [
+                    { en: 'shall', ph: '[ʃæl]', zh: '表示提出或征求意见', type: 'aux.' },
+                    { en: 'would', ph: '[wʊd]', zh: '表示愿意或要求', type: 'aux.' },
+                    { en: 'would like', ph: '', zh: '想要，愿意', type: 'phrase' },
+                    { en: 'wish', ph: '[wɪʃ]', zh: 'n.希望，愿望', type: 'n.' },
+                    { en: 'need', ph: '[niːd]', zh: 'v.t.需要', type: 'v.' },
+                    { en: 'ready', ph: '[ˈredi]', zh: 'adj.准备好，准备妥当', type: 'adj.' },
+                    { en: 'get ready for sth', ph: '', zh: '为...做准备', type: 'phrase' },
+                    { en: 'life', ph: '[laɪf]', zh: 'n.生活，生命', type: 'n.' },
+                    { en: 'world', ph: '[wɜːld]', zh: 'n.世界', type: 'n.' }
+                ]
+            },
+            unit5: {
+                level1: [
+                    { en: 'celebrate', ph: '[ˈselɪbreɪt]', zh: 'v.t.&v.t.庆祝，庆贺', type: 'v.' },
+                    { en: 'festival', ph: '[ˈfestɪvəl]', zh: 'n.节日', type: 'n.' },
+                    { en: 'Christmas', ph: '[ˈkrɪsməs]', zh: 'n.圣诞节', type: 'n.' },
+                    { en: 'present', ph: '[ˈpreznt]', zh: 'n.礼物', type: 'n.' },
+                    { en: 'together', ph: '[təˈgeðə]', zh: 'adv.在一起，共同', type: 'adv.' },
+                    { en: 'get together', ph: '', zh: '聚会，聚集', type: 'phrase' },
+                    { en: 'special', ph: '[ˈspeʃəl]', zh: 'adj.特殊的，特别的', type: 'adj.' }
+                ],
+                level2: [
+                    { en: 'moon cake', ph: '', zh: 'n.月饼', type: 'n.' },
+                    { en: 'dumpling', ph: '[ˈdʌmplɪŋ]', zh: 'n.饺子，汤圆', type: 'n.' },
+                    { en: 'rice dumpling', ph: '', zh: 'n.粽子', type: 'n.' },
+                    { en: 'lion', ph: '[ˈlaɪən]', zh: 'n.狮子', type: 'n.' },
+                    { en: 'lion dance', ph: '', zh: 'n.舞狮', type: 'n.' },
+                    { en: 'firework', ph: '[ˈfaɪəwɜːk]', zh: 'n.烟火，烟花', type: 'n.' },
+                    { en: 'lantern', ph: '[ˈlæntən]', zh: 'n.灯笼，灯具', type: 'n.' },
+                    { en: 'red pocket', ph: '', zh: '红包', type: 'n.' }
+                ],
+                level3: [
+                    { en: 'dress', ph: '[dres]', zh: 'v.t.&v.t.穿衣，穿着', type: 'v.' },
+                    { en: 'dress up', ph: '', zh: '装扮，打扮打扮', type: 'phrase' },
+                    { en: 'mask', ph: '[mɑːsk]', zh: 'n.面具，面罩', type: 'n.' },
+                    { en: 'paint', ph: '[peɪnt]', zh: 'v.t.涂颜料', type: 'v.' },
+                    { en: 'ghost', ph: '', zh: 'n.鬼，鬼魂', type: 'n.' },
+                    { en: 'pumpkin', ph: '[ˈpʌmpkɪn]', zh: 'n.南瓜', type: 'n.' },
+                    { en: 'trick or treat', ph: '', zh: '不给糖就捣蛋', type: 'phrase' },
+                    { en: 'trick', ph: '[trɪk]', zh: 'n.恶作剧，把戏', type: 'n.' }
+                ],
+                level4: [
+                    { en: 'knock', ph: '[nɒk]', zh: 'v.敲，击', type: 'v.' },
+                    { en: 'knock on the door', ph: '', zh: '敲门', type: 'phrase' },
+                    { en: 'shout', ph: '[ʃaʊt]', zh: 'v.t.&v.i.大声叫，喊', type: 'v.' },
+                    { en: 'inside', ph: '[ɪnˈsaɪd]', zh: 'adv.在（向）里面', type: 'adv.' },
+                    { en: 'let off', ph: '', zh: '放（鞭炮等）', type: 'phrase' },
+                    { en: 'take photos', ph: '', zh: '拍照', type: 'phrase' },
+                    { en: 'show', ph: '[ʃəʊ]', zh: 'n.演出，表演', type: 'n.' }
+                ],
+                level5: [
+                    { en: 'guess', ph: '[ges]', zh: 'n.猜，猜测', type: 'n.' },
+                    { en: 'as', ph: '[æz]', zh: 'prep.作为，当做', type: 'prep.' },
+                    { en: 'because', ph: '[bɪˈkɔːz]', zh: 'conj.因为', type: 'conj.' },
+                    { en: 'if', ph: '[ɪf]', zh: 'conj.如果', type: 'conj.' },
+                    { en: 'seem', ph: '[siːm]', zh: '好像，似乎，看来', type: 'v.' },
+                    { en: 'around', ph: '[əˈraʊnd]', zh: 'prep.围绕，在...周围', type: 'prep.' },
+                    { en: 'at night', ph: '', zh: '在夜里', type: 'phrase' }
+                ],
+                level6: [
+                    { en: 'full', ph: '[fʊl]', zh: 'adj.圆的，满的', type: 'adj.' },
+                    { en: 'different', ph: '[ˈdɪfərənt]', zh: 'adj.不同的', type: 'adj.' },
+                    { en: 'important', ph: '[ɪmˈpɔːtənt]', zh: 'adj.重要的', type: 'adj.' },
+                    { en: 'other', ph: '[ˈʌðə]', zh: 'adj.另外，其他', type: 'adj.' },
+                    { en: 'most', ph: '[məʊst]', zh: 'det.&pron.大多数，最多', type: 'det.' },
+                    { en: 'more', ph: '[mɔː]', zh: 'det.&pron.更多（的）', type: 'det.' },
+                    { en: 'find out', ph: '', zh: '发现', type: 'phrase' }
+                ],
+                level7: [
+                    { en: 'USA', ph: '', zh: 'abbr.美国', type: 'abbr.' },
+                    { en: 'treat', ph: '[triːt]', zh: 'n.招待', type: 'n.' },
+                    { en: 'question', ph: '[ˈkwestʃən]', zh: 'n.问题', type: 'n.' },
+                    { en: 'grandparent', ph: '', zh: 'n.祖父母（外）', type: 'n.' },
+                    { en: 'thing', ph: '[θɪŋ]', zh: 'n.东西，物品', type: 'n.' },
+                    { en: 'radio', ph: '[ˈreɪdiəʊ]', zh: '无线电广播（收音机）', type: 'n.' },
+                    { en: 'packet', ph: '[ˈpækɪt]', zh: 'n.包，袋', type: 'n.' }
+                ]
+            }
+        };
+
+        let currentGradeWords = null;
+        let currentUnit = null;
+        let currentUnitWords = null;
 
         let gameState = {
             score: 0,
             selectedCard: null,
             matchedPairs: 0,
-            totalPairs: 12, // 更新为最大配对数（第一关12对）
+            totalPairs: 0,
             currentLevel: 1,
+            maxLevels: 4,
             cards: [],
             completedLevels: []
         };
@@ -505,38 +933,54 @@
             document.getElementById('progressBar').style.width = `${progress}%`;
             document.getElementById('matchedPairs').textContent = gameState.matchedPairs;
             document.getElementById('totalPairs').textContent = gameState.totalPairs;
-            document.getElementById('currentLevel').textContent = gameState.currentLevel;
+            
+            // 更新当前单元和关卡显示
+            document.getElementById('currentLevel').textContent = `${currentUnit.replace('unit', '')}单元 第${gameState.currentLevel}关`;
             
             // 更新关卡指示器
-            for (let i = 1; i <= 4; i++) {
-                const dot = document.getElementById(`level${i}`);
+            const currentUnitLevels = Object.keys(currentUnitWords).filter(key => key.startsWith('level')).length;
+            const levelIndicator = document.querySelector('.level-indicator');
+            levelIndicator.innerHTML = '';
+            
+            for (let i = 1; i <= currentUnitLevels; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'level-dot';
                 if (i < gameState.currentLevel) {
-                    dot.className = 'level-dot completed';
+                    dot.classList.add('completed');
                 } else if (i === gameState.currentLevel) {
-                    dot.className = 'level-dot active';
-                } else {
-                    dot.className = 'level-dot';
+                    dot.classList.add('active');
                 }
+                levelIndicator.appendChild(dot);
             }
         }
 
         function startNextLevel() {
-            if (gameState.currentLevel < 4) {
+            const currentUnitLevels = Object.keys(currentUnitWords).filter(key => key.startsWith('level')).length;
+            
+            if (gameState.currentLevel < currentUnitLevels) {
                 gameState.currentLevel++;
                 gameState.matchedPairs = 0;
-                document.getElementById('celebration').classList.remove('show');
                 showLevelTransition(gameState.currentLevel);
-                setTimeout(initializeLevel, 1000);
+                
+                // 清除庆祝界面
+                document.getElementById('celebration').classList.remove('show');
+                
+                // 等待关卡过渡动画完成后初始化新关卡
+                setTimeout(() => {
+                    initializeLevel();
+                }, 1000);
             } else {
-                // 游戏通关
-                document.getElementById('celebrationTitle').textContent = '🎉 恭喜通关！';
-                document.getElementById('nextLevelBtn').textContent = '重新开始';
+                // 单元完成
+                document.getElementById('celebrationTitle').textContent = '🎉 单元完成！';
+                document.getElementById('nextLevelBtn').textContent = '返回单元选择';
                 document.getElementById('nextLevelBtn').onclick = () => {
                     gameState.currentLevel = 1;
                     gameState.score = 0;
                     gameState.completedLevels = [];
                     document.getElementById('score').textContent = '0';
-                    initializeLevel();
+                    document.getElementById('celebration').classList.remove('show');
+                    document.getElementById('gameContainer').style.display = 'none';
+                    document.getElementById('unitSelection').style.display = 'flex';
                 };
             }
         }
@@ -547,18 +991,22 @@
             gameState.selectedCard = null;
             document.getElementById('celebration').classList.remove('show');
             
-            // 获取当前关卡的单词
-            const currentLevelWords = allWords[gameState.currentLevel - 1];
-            const allCards = [];
+            // 获取当前单元的当前关卡的单词
+            const words = currentUnitWords[`level${gameState.currentLevel}`];
+            if (!words || words.length === 0) {
+                console.error('No words found for current level');
+                return;
+            }
+
+            // 更新当前关卡的配对数量
+            gameState.totalPairs = words.length;
             
-            currentLevelWords.forEach((word, index) => {
+            const allCards = [];
+            words.forEach((word, index) => {
                 allCards.push({ text: word.en, phonetic: word.ph, type: word.type, cardType: 'en', index });
                 allCards.push({ text: word.zh, phonetic: '', type: '', cardType: 'zh', index });
             });
 
-            // 更新当前关卡的配对数量
-            gameState.totalPairs = currentLevelWords.length;
-            
             // 打乱卡片顺序
             gameState.cards = shuffleArray(allCards);
 
@@ -600,7 +1048,6 @@
                         gameState.matchedPairs++;
                         gameState.score += 10;
                         
-                        // 添加匹配成功特效
                         const rect = firstCard.element.getBoundingClientRect();
                         createFireworks(rect.left + rect.width / 2, rect.top + rect.height / 2);
                         showScoreIncrement(rect.left + rect.width / 2, rect.top);
@@ -612,9 +1059,9 @@
                             setTimeout(() => {
                                 document.getElementById('finalScore').textContent = gameState.score;
                                 document.getElementById('celebrationTitle').textContent = 
-                                    gameState.currentLevel === 4 ? '🎉 恭喜通关！' : `🎉 完成第${gameState.currentLevel}关！`;
+                                    gameState.currentLevel === 3 ? '🎉 恭喜通关！' : `🎉 完成第${gameState.currentLevel}关！`;
                                 document.getElementById('nextLevelBtn').textContent = 
-                                    gameState.currentLevel === 4 ? '重新开始' : '进入下一关';
+                                    gameState.currentLevel === 3 ? '重新开始' : '进入下一关';
                                 document.getElementById('celebration').classList.add('show');
                                 
                                 // 添加通关特效
@@ -626,7 +1073,14 @@
                                         );
                                     }, i * 200);
                                 }
-                            }, 1000);
+
+                                // 如果不是最后一关，2秒后自动进入下一关
+                                if (gameState.currentLevel < 3) {
+                                    setTimeout(() => {
+                                        startNextLevel();
+                                    }, 2000);
+                                }
+                            }, 500);
                         }
                     }, 500);
                 } else {
@@ -661,12 +1115,21 @@
             const gameBoard = document.getElementById('gameBoard');
             gameBoard.innerHTML = '';
             
-            const currentWords = allWords[currentReviewLevel - 1];
+            // 获取当前单元的所有单词
+            const allWords = [];
+            Object.keys(currentUnitWords).forEach(levelKey => {
+                if (levelKey.startsWith('level')) {
+                    allWords.push(...currentUnitWords[levelKey]);
+                }
+            });
+            
+            if (!allWords || allWords.length === 0) return;
+
             const startIndex = currentReviewIndex;
-            const endIndex = Math.min(startIndex + 5, currentWords.length);
+            const endIndex = Math.min(startIndex + 5, allWords.length);
             
             for (let i = startIndex; i < endIndex; i++) {
-                const word = currentWords[i];
+                const word = allWords[i];
                 const enCard = createCard(word.en, word.ph, word.type, 'en', i);
                 const zhCard = createCard(word.zh, '', '', 'zh', i);
                 
@@ -683,36 +1146,15 @@
         }
 
         function updateReviewControls() {
-            const currentWords = allWords[currentReviewLevel - 1];
+            const allWords = [];
+            Object.keys(currentUnitWords).forEach(levelKey => {
+                if (levelKey.startsWith('level')) {
+                    allWords.push(...currentUnitWords[levelKey]);
+                }
+            });
+            
             document.getElementById('prevBtn').classList.toggle('disabled', currentReviewIndex === 0);
-            document.getElementById('nextBtn').classList.toggle('disabled', 
-                currentReviewIndex + 5 >= currentWords.length && currentReviewLevel === 4);
-        }
-
-        function nextReviewGroup() {
-            const currentWords = allWords[currentReviewLevel - 1];
-            if (currentReviewIndex + 5 >= currentWords.length) {
-                if (currentReviewLevel < 4) {
-                    currentReviewLevel++;
-                    currentReviewIndex = 0;
-                }
-            } else {
-                currentReviewIndex += 5;
-            }
-            showReviewCards();
-        }
-
-        function prevReviewGroup() {
-            if (currentReviewIndex === 0) {
-                if (currentReviewLevel > 1) {
-                    currentReviewLevel--;
-                    const currentWords = allWords[currentReviewLevel - 1];
-                    currentReviewIndex = Math.floor((currentWords.length - 1) / 5) * 5;
-                }
-            } else {
-                currentReviewIndex = Math.max(0, currentReviewIndex - 5);
-            }
-            showReviewCards();
+            document.getElementById('nextBtn').classList.toggle('disabled', currentReviewIndex + 5 >= allWords.length);
         }
 
         function startAutoPlay() {
@@ -726,7 +1168,7 @@
             document.getElementById('autoPlayBtn').classList.add('bg-yellow-600', 'hover:bg-yellow-700');
 
             const playNextWord = () => {
-                const currentWords = allWords[currentReviewLevel - 1];
+                const currentWords = currentUnitWords[currentReviewLevel - 1];
                 const cards = document.querySelectorAll('.word-card[data-type="en"]');
                 cards.forEach((card, index) => {
                     setTimeout(() => {
@@ -739,8 +1181,7 @@
 
                 setTimeout(() => {
                     if (isAutoPlaying) {
-                        const canMoveNext = currentReviewIndex + 5 < currentWords.length || currentReviewLevel < 4;
-                        if (canMoveNext) {
+                        if (currentReviewIndex + 5 < currentWords.length) {
                             nextReviewGroup();
                             autoPlayInterval = setTimeout(playNextWord, 1000);
                         } else {
@@ -760,29 +1201,78 @@
             document.getElementById('autoPlayBtn').classList.remove('bg-yellow-600', 'hover:bg-yellow-700');
         }
 
-        // 初始化游戏
+        // 修改导航相关的代码
+        document.getElementById('grade9-2').addEventListener('click', () => {
+            currentGradeWords = grade9_2_words;
+            document.getElementById('gradeSelection').style.display = 'none';
+            document.getElementById('unitSelection').style.display = 'flex';
+            document.querySelector('#unitSelection .nav-title').textContent = '初三下册';
+            updateUnitButtons();
+        });
+
+        document.querySelector('.nav-grid button:first-child').addEventListener('click', () => {
+            currentGradeWords = grade7_1_words;
+            document.getElementById('gradeSelection').style.display = 'none';
+            document.getElementById('unitSelection').style.display = 'flex';
+            document.querySelector('#unitSelection .nav-title').textContent = '初一上册';
+            updateUnitButtons();
+        });
+
+        // 更新单元选择界面
+        function updateUnitButtons() {
+            const unitGrid = document.querySelector('#unitSelection .nav-grid');
+            unitGrid.innerHTML = '';
+            
+            for (let i = 1; i <= 8; i++) {
+                const button = document.createElement('button');
+                button.className = 'nav-button';
+                if (!currentGradeWords[`unit${i}`]) {
+                    button.classList.add('disabled');
+                }
+                button.innerHTML = `
+                    <div class="nav-button-icon">📖</div>
+                    第${i}单元
+                `;
+                
+                if (!button.classList.contains('disabled')) {
+                    button.addEventListener('click', () => {
+                        currentUnit = `unit${i}`;
+                        currentUnitWords = currentGradeWords[currentUnit];
+                        gameState.currentLevel = 1;
+                        document.getElementById('unitSelection').style.display = 'none';
+                        document.getElementById('gameContainer').style.display = 'block';
+                        initializeLevel();
+                    });
+                }
+                
+                unitGrid.appendChild(button);
+            }
+        }
+
+        // 修改游戏重新开始的逻辑
         document.getElementById('newGameBtn').addEventListener('click', () => {
-            gameState.currentLevel = 1;
-            gameState.score = 0;
-            gameState.completedLevels = [];
-            document.getElementById('score').textContent = '0';
-            initializeLevel();
-        });
-        document.getElementById('nextLevelBtn').addEventListener('click', startNextLevel);
-        document.getElementById('reviewModeBtn').addEventListener('click', startReviewMode);
-        document.getElementById('exitReviewBtn').addEventListener('click', exitReviewMode);
-        document.getElementById('prevBtn').addEventListener('click', () => {
-            if (!document.getElementById('prevBtn').classList.contains('disabled')) {
-                prevReviewGroup();
+            if (confirm('确定要重新开始吗？这将返回到年级选择界面。')) {
+                gameState.currentLevel = 1;
+                gameState.score = 0;
+                gameState.matchedPairs = 0;
+                gameState.completedLevels = [];
+                gameState.selectedCard = null;
+                document.getElementById('score').textContent = '0';
+                document.getElementById('gameContainer').style.display = 'none';
+                document.getElementById('gradeSelection').style.display = 'flex';
+                currentGradeWords = null;
+                currentUnit = null;
+                currentUnitWords = null;
             }
         });
-        document.getElementById('nextBtn').addEventListener('click', () => {
-            if (!document.getElementById('nextBtn').classList.contains('disabled')) {
-                nextReviewGroup();
-            }
-        });
-        document.getElementById('autoPlayBtn').addEventListener('click', startAutoPlay);
-        initializeLevel();
+
+        // 修改导航按钮状态
+        document.querySelector('.nav-grid button:first-child').classList.remove('disabled');
+        
+        // 初始显示年级选择界面
+        document.getElementById('gameContainer').style.display = 'none';
+        document.getElementById('gradeSelection').style.display = 'flex';
+        document.getElementById('unitSelection').style.display = 'none';
     </script>
 </body>
 </html> 
